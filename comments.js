@@ -1,67 +1,41 @@
-// create web server
-const express = require('express');
-const app = express();
-const cors = require('cors');
-const port = 3000;
-const bodyParser = require('body-parser');
+// create web server and listen for requests
+// 1. create web server object
+// 2. create a request handler function
+// 3. register the request handler function with the web server object
+// 4. start listening for requests
+
+// 1. create web server object
+const http = require('http');
 const fs = require('fs');
 
-// read json file
-const comments = JSON.parse(fs.readFileSync('comments.json', 'utf8'));
+// 2. create a request handler function
+const server = http.createServer((request, response) => {
+    console.log(request.url);
 
-// middleware
-app.use(cors());
-app.use(bodyParser.json());
-
-// get all comments
-app.get('/comments', (req, res) => {
-    res.json(comments);
-});
-
-// get comment by id
-app.get('/comments/:id', (req, res) => {
-    const comment = comments.find(c => c.id === parseInt(req.params.id));
-    if (!comment) {
-        res.status(404).send('The comment with the given ID was not found.');
-        return;
+    if (request.url === '/') {
+        fs.readFile('./public/index.html', 'utf8', (errors, contents) => {
+            response.writeHead(200, {'Content-type': 'text/html'});
+            response.write(contents);
+            response.end();
+        });
+    } else if (request.url === '/ninjas') {
+        fs.readFile('./public/ninjas.html', 'utf8', (errors, contents) => {
+            response.writeHead(200, {'Content-type': 'text/html'});
+            response.write(contents);
+            response.end();
+        });
+    } else if (request.url === '/dojos/new') {
+        fs.readFile('./public/dojos.html', 'utf8', (errors, contents) => {
+            response.writeHead(200, {'Content-type': 'text/html'});
+            response.write(contents);
+            response.end();
+        });
+    } else {
+        response.end('File not found!!!');
     }
-    res.json(comment);
 });
 
-// create new comment
-app.post('/comments', (req, res) => {
-    const comment = {
-        id: comments.length + 1,
-        name: req.body.name,
-        comment: req.body.comment
-    };
-    comments.push(comment);
-    res.json(comment);
-});
-
-// update comment
-app.put('/comments/:id', (req, res) => {
-    const comment = comments.find(c => c.id === parseInt(req.params.id));
-    if (!comment) {
-        res.status(404).send('The comment with the given ID was not found.');
-        return;
-    }
-    comment.name = req.body.name;
-    comment.comment = req.body.comment;
-    res.json(comment);
-});
-
-// delete comment
-app.delete('/comments/:id', (req, res) => {
-    const comment = comments.find(c => c.id === parseInt(req.params.id));
-    if (!comment) {
-        res.status(404).send('The comment with the given ID was not found.');
-        return;
-    }
-    const index = comments.indexOf(comment);
-    comments.splice(index, 1);
-    res.json(comment);
-});
-
-// listen to port
-app.listen(port, () => console.log(`Listening on port ${port}...`));
+// 3. register the request handler function with the web server object
+// 4. start listening for requests
+server.listen(6789);
+console.log('Running in localhost at port 6789');
